@@ -1,0 +1,84 @@
+/* Reset default drag behavior */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.control-panel {
+    width: 100%;
+    padding: 10px;
+    background-color: #E1E5F6;
+    text-align: center;
+    border-bottom: 1px solid #000;
+}
+
+.terminals {
+    display: flex; /* Enable flexbox layout */
+}
+
+.terminal-head {
+    font-size: 30px;
+    color: Black;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+.car-terminal {
+    padding: 20px; /* Space around the edges of the parent */
+    width: 50%;
+    text-align: center;
+    border-bottom: 1px solid #000;
+    gap: 20px;
+    height: 480px; /* Set a fixed height */
+    overflow-y: auto; /* Enable horizontal scrolling */
+}
+
+.passenger-terminal {
+    padding: 20px;
+    width: 50%;
+    text-align: center;
+    border-bottom: 1px solid #000;
+    border-left: 1px solid #000;
+    gap: 20px;
+    height: 480px; /* Set a fixed height */
+    overflow-y: auto; /* Enable horizontal scrolling */
+}
+
+.car {
+    justify-content: center;
+    width: 90%;
+    padding: 10px;
+    margin: 5px;
+    text-align: left;
+    color: white;
+    background-color: #6678AA;
+    border: 1px solid #000;
+}
+
+.passenger {
+    width: 90%;
+    margin: 10px;
+    background-color: #FFE9FF;
+    text-align: center;
+    cursor: grab;
+}
+
+.passenger:hover {
+    background-color: #e0e0e0;
+}
+
+.passenger.dragging {
+    opacity: 0.5;
+}
+
+.passenger-seat {
+    background-color: #FFE9FF;
+    /*background-color: #FFF7D0;*/
+    color: black;
+    padding: 10px;
+    margin: 10px;
+    cursor: pointer;
+}
