@@ -3,40 +3,46 @@ document.addEventListener("DOMContentLoaded", function() {
     ui.Render();
 });
 
+const ClassNames = {
+    passengerTerminal: "passenger-terminal",
+    carTerminal: "car-terminal",
+    controlPanel: "control-panel",
+    terminals: "terminals",
+    terminalHead: "terminal-head",
+    car: "car",
+    passenger: "passenger",
+    passengerSeat: "passenger-seat"
+}
+
 class UI {
     constructor(container) {
         this.container = container;
-    }
 
-    Render() {
-        let passengerManager = new PassengerManager(this.container);
+        let uxManager = new UxManager(this.container);
+        let passengerManager = new PassengerManager(uxManager);
 
-        var passengerTerminalDiv = document.createElement("div");
-        passengerTerminalDiv.className = "passenger-terminal";
-        let passengerTerminal = new PassengerTerminal(passengerTerminalDiv, passengerManager);
+        let passengerTerminalDiv = document.createElement("div");
+        passengerTerminalDiv.className = `${ClassNames.passengerTerminal}`;
+        this.passengerTerminal = new PassengerTerminal(passengerTerminalDiv, passengerManager);
 
         let carManager = new CarManager(passengerManager);
 
-        var carTerminalDiv = document.createElement("div");
-        carTerminalDiv.className = "car-terminal";
-        let carTerminal = new CarTerminal(carTerminalDiv, carManager);
+        let carTerminalDiv = document.createElement("div");
+        carTerminalDiv.className = `${ClassNames.carTerminal}`;
+        this.carTerminal = new CarTerminal(carTerminalDiv, carManager);
 
-        var controlPanelDiv = document.createElement("div");
-        controlPanelDiv.className = "control-panel";
+        let controlPanelDiv = document.createElement("div");
+        controlPanelDiv.className = `${ClassNames.controlPanel}`;
+        this.controlPanel = new ControlPanel(controlPanelDiv, this.passengerTerminal, this.carTerminal);
+    }
 
-        let controlPanel = new ControlPanel(controlPanelDiv, passengerTerminal, carTerminal);
-        controlPanel.Render();
-        this.container.appendChild(controlPanelDiv);
-
-        passengerTerminal.Render();
-        carTerminal.Render();
-
-        let terminals = document.createElement("div");
-        terminals.className = "terminals";
-        terminals.appendChild(carTerminalDiv);
-        terminals.appendChild(passengerTerminalDiv);
-
-        this.container.appendChild(terminals);
+    Render() {
+        this.controlPanel.Render(this.container);
+        let terminalsDiv = document.createElement("div");
+        terminalsDiv.className = `${ClassNames.terminals}`;
+        this.carTerminal.Render(terminalsDiv);
+        this.passengerTerminal.Render(terminalsDiv);
+        this.container.appendChild(terminalsDiv);
     }
 }
 
@@ -47,7 +53,7 @@ class ControlPanel {
         this.carTerminal = carTerminal;
     }
 
-    Render() {
+    Render(parentElement) {
         // Create options for the select element
         var capacitySelect = document.createElement("select");
         for (var i = 1; i <= 12; i++) {
@@ -91,6 +97,8 @@ class ControlPanel {
 
         this.container.appendChild(passengerName);
         this.container.appendChild(addPassengerButton);
+
+        parentElement.appendChild(this.container);
     }
 }
 
@@ -100,7 +108,7 @@ class CarManager {
     }
     InsertCar(parentDiv, car) {
         var carDiv = document.createElement("div");
-        carDiv.className = "car";
+        carDiv.className = `${ClassNames.car}`;
         carDiv.textContent = car.Name;
         for (var i = 1; i <= car.Capacity; i++) {
             carDiv.appendChild(this.passengerManager.RenderPassengerSeat());
@@ -115,11 +123,12 @@ class CarTerminal {
         this.carManager = carManager;
     }
 
-    Render() { 
+    Render(parentElement) { 
         var nameDisplay = document.createElement("div");
-        nameDisplay.className = "terminal-head";
+        nameDisplay.className = `${ClassNames.terminalHead}`;
         nameDisplay.textContent = "Cars";
         this.container.appendChild(nameDisplay);
+        parentElement.appendChild(this.container);
     }
 
     InsertCar(carName, carCapacity) {
@@ -133,11 +142,12 @@ class PassengerTerminal {
         this.passengerManager = passengerManager;
     }
 
-    Render() {
+    Render(parentElement) {
         var nameDisplay = document.createElement("div");
-        nameDisplay.className = "terminal-head";
+        nameDisplay.className = `${ClassNames.terminalHead}`;
         nameDisplay.textContent = "Standby Passengers";
         this.container.appendChild(nameDisplay);
+        parentElement.appendChild(this.container);
     }
 
     InsertPassenger(passengerName) {
@@ -146,14 +156,34 @@ class PassengerTerminal {
 }
 
 class PassengerManager {
-    constructor(container) { 
-        this.container = container;
+    constructor(uxManager) { 
+        this.uxManager = uxManager;
+    }
+
+    RenderPassenger(passengerName) {
+        var passengerDiv = document.createElement("div");
+        passengerDiv.className = `${ClassNames.passenger}`;
+        passengerDiv.textContent = passengerName;
+
+        this.uxManager.AddDragProperties(passengerDiv);
+        return passengerDiv
+    }
+
+    RenderPassengerSeat() {
+        var passengerSeat = document.createElement("div");
+        passengerSeat.className = `${ClassNames.passengerSeat}`;
+        return passengerSeat
+    }
+}
+
+class UxManager {
+    constructor(parentElement) {
         this.draggingPassenger = null;
 
-        container.addEventListener('dragover', (event) => {
+        parentElement.addEventListener('dragover', (event) => {
             let parentContainer = this.draggingPassenger.parentElement;
             event.preventDefault();
-            const targetContainer = event.target.closest('.passenger-seat, .passenger-terminal');
+            const targetContainer = event.target.closest(`.${ClassNames.passengerSeat}, .${ClassNames.passengerTerminal}`);
             if (
                 targetContainer && 
                 targetContainer !== this.draggingPassenger &&
@@ -172,8 +202,20 @@ class PassengerManager {
         });
     }
 
+    AddDragProperties(element) {
+        element.setAttribute('draggable', 'true');
+        element.addEventListener('dragstart', (event) => {
+            this.draggingPassenger = event.target;
+            event.target.classList.add('dragging');
+        });
+        element.addEventListener('dragend', () => {
+            this.draggingPassenger.classList.remove('dragging');
+            this.draggingPassenger = null;
+        });
+    }
+
     isFilledSeat(seat) {
-        if (seat.classList.contains("passenger-seat")) {
+        if (seat.classList.contains(`${ClassNames.passengerSeat}`)) {
             if (seat.getElementsByClassName("passenger").length > 0) {
                 return true
             }
@@ -182,32 +224,9 @@ class PassengerManager {
     }
 
     isSeat(seat) {
-        if (seat.classList.contains("passenger-seat")) {
+        if (seat.classList.contains(`${ClassNames.passengerSeat}`)) {
             return true
         }
         return false
-    }
-
-    RenderPassenger(passengerName) {
-        var passengerDiv = document.createElement("div");
-        passengerDiv.className = "passenger";
-        passengerDiv.textContent = passengerName;
-
-        passengerDiv.setAttribute('draggable', 'true');
-        passengerDiv.addEventListener('dragstart', (event) => {
-            this.draggingPassenger = event.target;
-            event.target.classList.add('dragging');
-        });
-        passengerDiv.addEventListener('dragend', () => {
-            this.draggingPassenger.classList.remove('dragging');
-            this.draggingPassenger = null;
-        });
-        return passengerDiv
-    }
-
-    RenderPassengerSeat() {
-        var passengerSeat = document.createElement("div");
-        passengerSeat.className = "passenger-seat";
-        return passengerSeat
     }
 }
