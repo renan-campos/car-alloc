@@ -7,8 +7,10 @@
 }
 
 .control-panel {
+    display: block;
     width: 100%;
     padding: 10px;
+    height: 5vh;
     background-color: #E1E5F6;
     text-align: center;
     border-bottom: 1px solid #000;
@@ -16,6 +18,9 @@
 
 .terminals {
     display: flex; /* Enable flexbox layout */
+    /*height: 480px; /* Set a fixed height */
+    height: 80vh;
+    overflow-y: auto; /* Enable horizontal scrolling */
 }
 
 .terminal-head {
@@ -32,8 +37,6 @@
     text-align: center;
     border-bottom: 1px solid #000;
     gap: 20px;
-    height: 480px; /* Set a fixed height */
-    overflow-y: auto; /* Enable horizontal scrolling */
 }
 
 .passenger-terminal {
@@ -43,8 +46,6 @@
     border-bottom: 1px solid #000;
     border-left: 1px solid #000;
     gap: 20px;
-    height: 480px; /* Set a fixed height */
-    overflow-y: auto; /* Enable horizontal scrolling */
 }
 
 .car {
